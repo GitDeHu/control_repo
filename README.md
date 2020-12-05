@@ -1,2 +1,2 @@
 # control_repo
-Repo for Learning Puppet
+Repo for "Learning Puppet"
