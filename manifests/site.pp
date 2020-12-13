@@ -1,5 +1,4 @@
 #default node declaration. falls keien spezifische node declaration existiert, wird puppet diese anwenden
-#2
 node default {
   file {'/root/README':
     ensure  => file,
