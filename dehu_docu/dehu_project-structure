@@ -25,6 +25,11 @@ environment.conf    <-- (Puppet muss wissen in welchem Verz meine custom Module 
 ---------------------------------------------------------------------------------------------------------
 
 Collection der Verzeichnisse
-> r10k: deployed puppet code aus production branch in basedir!
+#r10k: deployed puppet code aus production branch in basedir!
 basedir: '/etc/puppetlabs/code/environments'
+
+#installierte module
+$ cd /etc/puppetlabs/code/environments/production/modules
+
+
 
