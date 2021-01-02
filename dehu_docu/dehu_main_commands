@@ -1,0 +1,156 @@
+
+LINKS:
+
+Mainpage: https://puppet.com/ 
+Docs Puppet: https://puppet.com/docs/
+Docs Puppet OpenSource: https://puppet.com/docs/puppet/7.0/puppet_index.html
+Resource Types: https://puppet.com/docs/puppet/7.0/resource_types.html
+
+Doku in OneDrive:  https://onedrive.live.com/about/en-us/signin/
+hdegonda@outlook.de  $marvin42
+...EigendeDateien/Documente und Notizbuch: InfrastructureAsCode
+
+
+
+=========================================================================
+-- Vagrant und Puppet commands
+
+>>> VAGRANT VM Manager <<<<<<<<<<<<<<<
+
+$ cd ~/Desktop/puppet/
+... diese commands basieren auf die definierte VM im "Vagrantfile" in ~/Desktop/puppet/
+
+$ vagrant --version
+
+(1) VM mit Puppetserver und Agent starten
+$ vagrant up        <-- starts and provisions the vagrant environment
+
+$ vagrant status
+
+(2) VM stoppen
+$ vagrant halt      <-- vm stoppen (virtualbox poweroff)
+
+
+$ vagrant desproy   <-- vm zerstören
+
+(3) SSH
+$ vagrant ssh       <-- ssh session in VM öffnen
+
+
+
+>>> Puppet Server <<<<<<<<<<<<<<<<<<<<<<
+#  ist hier installiert: /etc/puppetlabs
+#  environments code ist hier: /etc/puppetlabs/code/environments/production/manifests
+
+
+#Puppetserver service in der VM---
+$ systemctl enable puppetserver  <-- startet puppetserver bei VM start
+$ systemctl start puppetserver
+$ systemctl status puppetserver
+$ systemctl stop puppetserver
+
+
+#Environment state auf puppet server deployen
+.. mit r10k werden manifests von GitHub gepullt und auf dem Puppetserver kopiert
+.. in /etc/puppetlabs/code/environments/production/manifests
+
+# r10k code management tool
+# Command für deploying puppet code
+.. ist mit meinem GitHub repository verbunden: control_repo
+$ r10k deploy environment -p
+
+
+>>> PUPPET AGENT starten <<<<<<<<<<<<<<<
+.. Agent läuft in dieser Lab halt auf dem gleichen Host. anyway
+# Agent starten als sudo
+# Agent holt die manifests für ihn und führt sie auf dem Node aus!
+
+$ sudo  su -   <-- in user root wechseln
+$ puppet agent -t   <-- -t für try my code auf diesem Agent
+
+
+#Ressource Types
+.. ein Ressourcetype kann in einem file mit ext xyz.pp definiert werden. Z.b. ein file Resource
+um ein file auf dem node zu erstellen. wird dieses file deployed auf dem puppetserver
+und der puppet agent wird gestartet auf dem node, so wird das file angelegt
+
+node default {
+  file {'/root/README':
+    ensure  => file,
+    content => 'das ist mein readme, test',
+    owner   => 'root',
+  }
+}
+
+# Puppet files und mit Modulen arbeiten
+-- Wichtig: bevor man eigene Module schreibt, findet man in puppet-forge  https://forge.puppet.com/
+sehr wahrscheinlich was man benötigt. 
+In forge suchen, dann Dependencies checken, weil diese müssen explizit mitinstalliert werden
+Modul installieren z.b. nginx:
+-- in GitHUB im control_repo ein file 'Puppetfile' erstellen mit folgendem content:
+mod 'puppet-nginx', '2.1.1'   <-- das ist mein Modul und anschliessend dependencies
+mod 'puppetlabs/stdlib'       <-- keine version bedeutet latest
+mod 'puppetlabs/concat'
+mod 'puppetlabs/translate'
+
+
+
+#Profiles und Roles
+profiles -- spezifisches set von configs, z.b. web oder db server
+roles -- definiert die business role eines nodes z.b. db_server, app_server, master_server
+..1 role hat n-profiles
+..jeder node ist genau EINER role zugeteilt
+
+
+
+
+
+#eigene Module
+diese sind im Repo normalerweise im folder site/profile/manifests gespeichert
+1) profiles manifests anlegen (siehe GitHub - site/profile/manifests)
+base.pp   -dies ist das basis profile, welches dann später in jeder role aufgenommen wird.
+          -base.app wird in jeder role aufgenommen, heisst, Änderungen hier werden auf 
+          -jedem node eingeführt
+app.pp
+web.pp
+db.pp
+
+2) profiles gruppieren in rollen
+
+roles für app-, db- und master-server
+#App server besteht aus einem web und app sowie aus dem base profil
+class role::app_server {
+  include profile::web
+  include profile::base
+  include profile::app
+}
+
+#DB server besteht aus dem db und dem base profil
+class role::db_server {
+  include profile::base
+  include profile:db
+}
+
+#mein master server besteht aus dem base profil
+class role::master_server {
+  include profile::base
+}
+
+...man sieht, dass base profil in allen roles drin steht. im base profil wird der
+user admin angelegt.
+Somit wird admin user auf jedem node angelegt!! 
+Man sieht hier die Möglichkeit, je nachdem wo in welchem Profil neue Ressourcen aufgenommen
+werden, dass diese auf allen oder nur auf dedizierte notes installiert werden
+
+
+WICHTIG: Puppet muss wissen in welchem Verzeichnis meine custom profiles stehen.
+Dafür im control_repo ein neues file erstellen.
+filename: environment.conf   <- r10k holt sich dort den parameter modulepath und deployed
+entsprechend die Module auf dem puppet master:
+
+environment.conf hat diesen Inhalt:
+modulepath = site:modules:$basemodulepath
+
+
+
+

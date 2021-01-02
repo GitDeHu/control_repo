@@ -1,0 +1,279 @@
+Diese Anleitung basiert auf dem Linkedin Kurs "Learning Puppet"
+
+INFO: in meinem OneNode "InfrastructureAsCode (IaaC)" welches sich in OneDrive in 
+OndeDrive/Persönlich/Documente befindet.
+OneDrive: https://onedrive.live.com/about/de-de/signin/
+hdegonda@outlook.de
+$marvin42
+
+GitHub: https://github.com/
+--hubert@degonda.net
+--$git_dehu42$
+
+
+
+===== VSCode extension: =====
+
+>>Puppet:
+kann ab hier installiert werden: https://puppet-vscode.github.io/
+
+>>Git Extensions Pack:
+..in Git Extensions suchen nach Git Extension..
+.. "Git Extension Pack" installieren
+
+>>#Git configs in terminal einstellen:
+hubi@DeHu-Lx1:~$ git config --global user.name "hubert"
+hubi@DeHu-Lx1:~$ git config --global user.email "hubert@degonda.net"
+hubi@DeHu-Lx1:~$ git config --global --list
+
+>>#Git settings
+ctrl+,
+suchen nach: git
+Git  selektieren
+in settings suchen nach 'Default Clone Directory' und settings.json
+... das sind meine Einstellungen:
+{
+    "window.zoomLevel": -1,
+    "projectManager.git.baseFolders": [
+        "/home/hubi/Documents/GitRepos/GitProjManager"
+    ],
+    "git.path": "/usr/bin/git",
+    "git.defaultCloneDirectory": "/home/hubi/Documents/GitRepos"
+}
+
+
+>> VSCode & GitHub:
+-- GitHub Repository clonen
+Ctrl+Shift+P
+> Git: Clone
+select.. "Clone from GitHub" und repo link aus GitHub reinkopieren
+..danach lokaler Git Folder selektieren wo das Repo erstellt wird "/home/hubi/Documents/GitRepos"
+
+
+
+---------------------------------------------------------------------------------
+
+
+****  Linkedin Kurs  "Learning Puppet" *******************************
+
+
+>>> ToDos in Kap: 2. Install your Puppet Master <<<<<
+
+> Virtual Box
+$ sudo apt update
+$ sudo apt install virtualbox
+
+> Vagrant (command-line tool for building and manage VMs
+https://linuxize.com/post/how-to-install-vagrant-on-ubuntu-20-04/s)
+
+check aktuelle Version: https://www.vagrantup.com/downloads.html
+aktuelle ver: 2.2.14
+
+#Download
+$ curl -O https://releases.hashicorp.com/vagrant/2.2.14/vagrant_2.2.14_x86_64.deb
+
+#install
+$ sudo apt install ./vagrant_2.2.14_x86_64.deb
+
+#verifizieren der Installation
+$ vagrant --version
+
+
+> Downlaod class Files from Linkedin
+/home/hubi/Documents/puppet_projects/linkedin_learning_puppet/Exercise Files
+
+> Save Vagrant File
+.. das "Vagrantfile" File aus Excercise /02_01 kopieren nach /home/hubi/Desktop/puppet
+.... dieses beinhaltet die Konfig für die zu installiernde VMs auf virtualbox
+.... UND gilt für den gesamten Puppet Kurs
+todo: hier hab ich 2 CPUs gegeben und 2048 MB RAM
+
+#Start Vagrant und provisionierung VirtualBox VMs
+.. wechseln in Verz. wo das Vagrantfile ist und start vagrant
+.. vagrant downloaded die centos distro wie definiert im vagrantfile und installiert dieses
+.. in VirtualBox sieht man dann die VM 
+$ cd ~/Desktop/puppet/
+$ vagrant up
+
+--------
+..dies sind weitere Vagrant commands:
+$ vagrant halt
+$ vagrant desproy
+--------
+
+# Vagrantfile im user PATH, damit vagrant von überall funktioniert
+todo
+
+
+#Install Puppet Master Software ---------------------------------------------
+.. https://puppet.com/docs
+
+##login in laufende Vagrant VM
+$ cd ~/Desktop/puppet/
+$ vagrant ssh
+
+## wechseln auf root user
+$ sudo su -
+
+## rpm Puppet Package runterladen
+$ rpm -Uvh https://yum.puppet.com/puppet6-release-el-7.noarch.rpm
+
+## Puppet Server installieren in der Centos VM
+------------------------------------------------
+.. und gleichzeitig vim und git
+$ yum install -y puppetserver vim git  <-- das hat nicht funktioniert, daher einzeln wie folgt:
+$ yum install vim
+$ yum install git
+$ yum install puppetserver
+
+# Puppet Server konfigurieren
+.. JAVA_ARGS="-Xms1g -Xmx1g   <-- geändert auf 1GB
+$ vim /etc/sysconfig/puppetserver
+
+
+#START puppet Server -------------------------------------------
+... selbstverständlich schauen dass ich in der VM beinhaltet
+... vagrant ssh
+... service in: /usr/lib/systemd/system/puppetserver.service
+$ systemctl start puppetserver
+$ systemctl status puppetserver
+$ systemctl stop puppetserver
+
+
+# Weitere Konfiguration:
+.. wenn der Puppet Agent muss wissen auf welchem Server der Pappetserver läuft.
+.. in meinem Fall hier zeigt Agent auf sich selber (auf gleicher VM)
+.. neue Section einfügen:
+[agent]
+server = master.puppet.vm
+
+$ vim /etc/puppetlabs/puppet/puppet.conf
+
+bsp. puppet.conf ------------
+[server]
+vardir = /opt/puppetlabs/server/data/puppetserver
+logdir = /var/log/puppetlabs/puppetserver
+rundir = /var/run/puppetlabs/puppetserver
+pidfile = /var/run/puppetlabs/puppetserver/puppetserver.pid
+codedir = /etc/puppetlabs/code
+
+[agent]
+server = master.puppet.vm
+-------------------------------
+
+
+
+
+
+
+# Ruby Gem muss installiert werden:
+..RubyGems is a package manager for the Ruby programming language that provides a 
+..standard format for distributing Ruby programs and libraries 
+..(in a self-contained format called a "gem"), a tool designed to easily manage the 
+..installation of gems, and a server for distributing them.
+--
+..hier zeigen wir auf die Gem welche mit dem Puppetserver installiert ist
+..anstatt eine weitere installation zu machen.
+..daher im bash_profile, rubyGem in Puppetserver für meinen User bekanntmachen
+..PATH=$PATH:/opt/puppetlabs/puppet/bin
+$ vim .bash_profile
+$ exec bash  <-- bash session starten
+$ source .bash_profile  <-- Änderungen im Profile aktivieren
+
+#check ob gem erreichbar ist
+$ gem  <-- wird gem gem PATH starten können
+
+# r10k ----CODE MANAGEMENT TOOL------------------------------------
+.. r10k is a code management tool that allows you to manage your environment 
+.. configurations (such as production, testing, and development) in a source control 
+..repository.
+.. Wird verwendet um unser Code vom GitHub auf den Puppetserver zu installieren
+.. GitHub -> r10k -> Puppetserver
+# r10k installieren
+$ gem install r10k
+
+
+# PUPPET AGENT starten
+.. hier halt auf dem gleichen Host
+..Prerequisits: sudo su -  <-- als root ausführen
+$ puppet agent -t
+
+
+
+# GitHub <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+www.github.command
+--hubert@degonda.net
+--$git_dehu42$
+..User in git: GitDeHu
+Repository anlegen: control_repo anlegen. Neuer Branch production anlegen und dieser Branch 
+als Default in GitHub settings konfigurieren. Branch Main kann gelöscht werden.
+
+#r10k muss wissen wo das control_repo sich befindet
+.. dies wird auf dem Puppet Master konfiguriert
+..r10k configuration directory anlegen
+$ mkdir /etc/puppetlabs/r10k
+
+..r10k config file anlegen
+$ vim /etc/puppetlabs/r10k/r10k.yaml
+
+#Inhalt r10k.yaml
+.. remote ist mein GitHub control_repo
+.. in basedir wird r10k den Branch production (Default Branch) pullen
+
+---
+:cachedir: '/var/cache/r10k'
+
+:sources:
+        :my-org:
+                remote: 'https://github.com/GitDeHu/control_repo.git'
+                basedir: '/etc/puppetlabs/code/environments'
+
+
+# Command für deploying puppet code
+$ r10k deploy environment -p
+
+# Locales Repository checken
+$ cd /etc/puppetlabs/code/environments/
+$ ls -all    <-- ein Verzeichnis für Branch production ist hier
+$ cd production
+$ cat README.md   <-- zeigt das README aus GitHub Repository
+
+
+# metadata_jscon_lint: puppet code 
+..check your module for compliance with the style guide
+$ gem install metadata-json-lint
+
+#testen auf dem node:
+..?? gibt es default metadata.json files ??
+.. http://puppet-lint.com/developer/tutorial/
+metadata-json-lint /path/to/metadata.json
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
