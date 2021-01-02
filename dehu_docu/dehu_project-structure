@@ -21,3 +21,10 @@ Puppetfile      <-- Externe Module und Depenencies (aus Puppet forge) können hi
 environment.conf    <-- (Puppet muss wissen in welchem Verz meine custom Module stehen) r10k holt sich dort 
                     <-- den parameter modulepath und deployed entsprechend die Module auf dem puppet master
 
+
+---------------------------------------------------------------------------------------------------------
+
+Collection der Verzeichnisse
+> r10k: deployed puppet code aus production branch in basedir!
+basedir: '/etc/puppetlabs/code/environments'
+

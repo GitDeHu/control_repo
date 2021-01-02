@@ -38,6 +38,22 @@ $ vagrant ssh       <-- ssh session in VM öffnen
 
 
 
+-----------------------------------------------------
+# Puppet Deploying und Puppet Agent auf master node
+#..kommt unten nochmal: hier für schnelles Suchen der commands
+
+# swith to root user
+$ sudo  su -
+# deploy production
+$ r10k deploy environment -p
+# agent start
+$ puppet agent -t
+-----------------------------------------------------
+
+
+
+
+
 >>> Puppet Server <<<<<<<<<<<<<<<<<<<<<<
 #  ist hier installiert: /etc/puppetlabs
 #  environments code ist hier: /etc/puppetlabs/code/environments/production/manifests
