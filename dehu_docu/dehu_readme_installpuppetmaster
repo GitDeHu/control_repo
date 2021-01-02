@@ -14,8 +14,33 @@ GitHub: https://github.com/
 
 ===== VSCode extension: =====
 
->>Puppet:
+>>Puppet Extension Pack:
+Prerequisits:  Puppet Development Kit: https://puppet.com/docs/pdk/1.x/pdk.html
+..wird benötigt für syntax highlithting usw.
+>Install Puppet: PDK  (lokal wo VSCode installiert ist)
+wget https://apt.puppet.com/puppet-tools-release-bionic.deb
+sudo dpkg -i puppet-tools-release-bionic.deb
+sudo apt-get update 
+sudo apt-get install pdk   (wird hier installiert: /opt/puppetlabs/pdk)
+
+> PDK Open a terminal to re-source your shell profile and make PDK available to your PATH
+> PATH="$PATH:/opt/puppetlabs/pdk"
+$ vim .profile
+#vor PATH if's dies einfügen
+PATH="$PATH:/opt/puppetlabs/pdk"
+>.profile speichern
+$ exec bash  <-- bash session starten
+$ source .profile  <-- Änderungen im Profile aktivieren
+
+> VSCode Puppet Extension:
+https://marketplace.visualstudio.com/items?itemName=puppet.puppet-vscode
 kann ab hier installiert werden: https://puppet-vscode.github.io/
+Syntax highlithting: falls nicht funktioniert, in VSCode, Ctrl+, dann suchen nach Puppet
+.. install Type: PDK
+.. install Directory: /opt/puppetlabs/pdk
+
+
+
 
 >>Git Extensions Pack:
 ..in Git Extensions suchen nach Git Extension..

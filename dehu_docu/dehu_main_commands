@@ -69,6 +69,10 @@ $ sudo  su -   <-- in user root wechseln
 $ puppet agent -t   <-- -t für try my code auf diesem Agent
 
 
+
+
+-------------  Lab:  3. First Steps with Puppet ----------------------
+
 #Ressource Types
 .. ein Ressourcetype kann in einem file mit ext xyz.pp definiert werden. Z.b. ein file Resource
 um ein file auf dem node zu erstellen. wird dieses file deployed auf dem puppetserver
@@ -82,10 +86,26 @@ node default {
   }
 }
 
+
+
+### Profiles und Roles
+> profiles -- spezifisches set von configs, z.b. web oder db server
+> roles -- definiert die business role eines nodes z.b. db_server, app_server, master_server
+..1 role hat n-profiles
+..jeder node ist genau EINER role zugeteilt
+
+
+
+
+### bestehende Module aus Puppet Forge ####
+Konfiguration im file "Puppetfile"
+
+
 # Puppet files und mit Modulen arbeiten
 -- Wichtig: bevor man eigene Module schreibt, findet man in puppet-forge  https://forge.puppet.com/
 sehr wahrscheinlich was man benötigt. 
 In forge suchen, dann Dependencies checken, weil diese müssen explizit mitinstalliert werden
+
 Modul installieren z.b. nginx:
 -- in GitHUB im control_repo ein file 'Puppetfile' erstellen mit folgendem content:
 mod 'puppet-nginx', '2.1.1'   <-- das ist mein Modul und anschliessend dependencies
@@ -95,17 +115,9 @@ mod 'puppetlabs/translate'
 
 
 
-#Profiles und Roles
-profiles -- spezifisches set von configs, z.b. web oder db server
-roles -- definiert die business role eines nodes z.b. db_server, app_server, master_server
-..1 role hat n-profiles
-..jeder node ist genau EINER role zugeteilt
 
 
-
-
-
-#eigene Module
+### eigene Module ###
 diese sind im Repo normalerweise im folder site/profile/manifests gespeichert
 1) profiles manifests anlegen (siehe GitHub - site/profile/manifests)
 base.pp   -dies ist das basis profile, welches dann später in jeder role aufgenommen wird.
@@ -141,6 +153,14 @@ user admin angelegt.
 Somit wird admin user auf jedem node angelegt!! 
 Man sieht hier die Möglichkeit, je nachdem wo in welchem Profil neue Ressourcen aufgenommen
 werden, dass diese auf allen oder nur auf dedizierte notes installiert werden
+
+
+------------- Lab: 4. Managing More Nodes ---------------------------------------------------
+https://forge.puppet.com/samuelson   <-- Externer Modul von samuelson
+
+
+
+
 
 
 WICHTIG: Puppet muss wissen in welchem Verzeichnis meine custom profiles stehen.

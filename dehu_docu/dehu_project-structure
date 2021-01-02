@@ -1,0 +1,23 @@
+
+GIT branch 'production'   <-- default branch in GIT für IaC (Infrastructure as Code)
+
+-control_repo   <-- mein puppet Repository für Mashine Cluster
+--manifests
+---- site.pp    <-- node declaration (node default, node 'vm1.xy.com, node 'vm2.xy.com') - Infrastruktur Configuraiton
+
+--site
+--- profile
+------ manifests    <-- Profile Configfiles xy.pp (base.pp, db.pp, web.pp, app.pp usw. )
+                    <-- Class Definitionen für Profiles
+
+--- role
+------ manifests    <-- Role Configfiles xy.pp (app_server.pp, db_server.pp, master_server.pp usw)
+                    <-- Class Definition für Business Roles
+                    
+
+Puppetfile      <-- Externe Module und Depenencies (aus Puppet forge) können hier konfiguriert werden
+                <-- Können dann in eigene Profile includiert werden
+
+environment.conf    <-- (Puppet muss wissen in welchem Verz meine custom Module stehen) r10k holt sich dort 
+                    <-- den parameter modulepath und deployed entsprechend die Module auf dem puppet master
+
